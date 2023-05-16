@@ -23,11 +23,9 @@ class CreatePropertiesTable extends Migration
             $table->integer('floor_area')->comment('sqm');
             $table->string('country', 50);
             $table->string('address');
-            $table->unsignedBigInteger('broker_id');
             $table->unsignedBigInteger('property_type_id');
             $table->timestamps();
 
-            $table->foreign('broker_id')->references('id')->on('brokers');
             $table->foreign('property_type_id')->references('id')->on('property_types');
         });
     }

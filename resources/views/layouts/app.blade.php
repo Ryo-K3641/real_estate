@@ -11,6 +11,7 @@
 
     <!-- Bootstrap -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
     <script src="{{ asset('js/app.js') }}" defer></script>
 
     {{-- FontAwesome --}}
@@ -32,10 +33,6 @@
                     <ul class="navbar-nav ms-auto">
                         <!-- Authentication Links -->
                         @guest
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Home</a>
-                            </li>
-
                             @if (Route::has('login'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
@@ -48,12 +45,21 @@
                                 </li>
                             @endif
                         @else
+                            @can('admin')
+                                <li class="nav-item">
+                                    <a href="{{ route('property.create') }}" class="nav-link">New Property</a>
+                                </li>
+                            @endcan
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }}
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    @cannot('admin')
+                                        <a href="#" class="dropdown-item">Profile</a>
+                                        
+                                    @endcannot
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">

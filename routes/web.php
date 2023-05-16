@@ -16,9 +16,15 @@ use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 
-Route::group(['prefix' => 'property', 'as' => 'property.'], function(){
-    Route::get('/create', [PropertyController::class, 'create'])->name('create');
+Route::get('/', [PropertyController::class, 'index'])->name('index');
+Route::get('/property/{id}/show', [PropertyController::class, 'show'])->name('property.show');
+
+Route::group(['middleware' => 'auth'], function(){
+
+    Route::group(['middleware' => 'admin', 'prefix' => 'property', 'as' => 'property.'], function(){
+        Route::get('/create', [PropertyController::class, 'create'])->name('create');
+        Route::post('/store', [PropertyController::class, 'store'])->name('store');
+        
+    });
 
 });
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

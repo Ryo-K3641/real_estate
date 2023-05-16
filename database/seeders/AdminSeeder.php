@@ -14,6 +14,7 @@ class AdminSeeder extends Seeder
     {
         $this->user = $user;
     }
+    
     /**
      * Run the database seeds.
      *
