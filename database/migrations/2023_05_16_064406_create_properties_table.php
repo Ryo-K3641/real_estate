@@ -15,12 +15,12 @@ class CreatePropertiesTable extends Migration
     {
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
-            $table->string('description', 30);
+            $table->string('description', 50);
             $table->text('summary');
             $table->string('image', 50);
             $table->integer('bedrooms');
-            $table->integer('bathrooms');
-            $table->integer('floor_area')->comment('sqm');
+            $table->decimal('bathrooms', 3, 1);
+            $table->decimal('floor_area', 6, 2)->comment('sqm');
             $table->string('country', 50);
             $table->string('address');
             $table->unsignedBigInteger('property_type_id');

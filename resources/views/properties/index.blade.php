@@ -22,17 +22,17 @@
                         <i class="fa-solid fa-bed"></i> {{ $property->bedrooms }}
                     </div>
                     <div class="col">
-                        <i class="fa-solid fa-bath"></i> {{ $property->bathrooms }}
+                        <i class="fa-solid fa-bath"></i> {{ $property->bathrooms + 0 }}
                     </div>
-                    <div class="col">
-                        <i class="fa-solid fa-ruler-combined"></i> {{ $property->floor_area }} sqm
+                    <div class="col-auto">
+                        <i class="fa-solid fa-ruler-combined"></i> {{ $property->floor_area + 0 }} sqm
                     </div>
                 </div>
 
-                <p class="text-secondary mt-2">
+                <p>
                     <i class="fa-solid fa-user-tie"></i>
                     @foreach ($property->propertyUser as $property_user)
-                        &emsp;<a href="#" class="text-secondary">{{ $property_user->agent->name }}</a>
+                    &emsp;<span class="text-decoration-underline">{{ $property_user->agent->name }}</span>
                     @endforeach
                 </p>
             </div>

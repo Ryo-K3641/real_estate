@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Property;
 use App\Models\User;
 use App\Models\PropertyType;
+use Illuminate\Support\Facades\Storage;
 
 class PropertyController extends Controller
 {
@@ -13,7 +14,6 @@ class PropertyController extends Controller
     private $user;
     private $property_type;
     const LOCAL_STORAGE_FOLDER = 'public/images/';
-
 
     public function __construct(Property $property, PropertyType $property_type, User $user)
     {
@@ -24,24 +24,24 @@ class PropertyController extends Controller
 
     public function index()
     {
-        $all_properties = $this->property->all();
+        $all_properties = $this->property->latest()->get();
         return view('properties.index')->with('all_properties', $all_properties);
     }
 
     public function create()
     {
-        $agents         = $this->user->where('role_id', User::AGENT_ROLE_ID)->get();
-        $property_types = $this->property_type->all();
+        $all_agents         = $this->user->all();
+        $property_types     = $this->property_type->all();
         
         return view('properties.create')
                 ->with('property_types', $property_types)
-                ->with('agents', $agents);
+                ->with('all_agents', $all_agents);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'description'       => 'required|max:30',
+            'description'       => 'required|max:50',
             'summary'           => 'required|max:1000',
             'property_type_id'  => 'required|numeric',
             'bedrooms'          => 'required|numeric',
@@ -83,6 +83,88 @@ class PropertyController extends Controller
     public function show($id)
     {
         $property = $this->property->findOrFail($id);
-        return view('properties.show')->with('property', $property);
+        $agents = $this->getSelectedAgents($property);
+        return view('properties.show')->with('property', $property)->with('agents', $agents);
+    }
+
+    public function edit($id)
+    {
+        $property           = $this->property->findOrFail($id);
+        $property_types     = $this->property_type->all();
+        $all_agents         = $this->user->all();
+        $selected_agents    = $this->getSelectedAgents($property);
+
+        return view('properties.edit')
+                ->with('property', $property)
+                ->with('property_types', $property_types)
+                ->with('all_agents', $all_agents)
+                ->with('selected_agents', $selected_agents);
+    }
+
+    private function getSelectedAgents($property)
+    {
+        $selected_agents = [];
+        foreach ($property->propertyUser as $property_user) {
+            $selected_agents[] = $property_user->user_id;
+        }
+        return $selected_agents;
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'description'       => 'required|max:50',
+            'summary'           => 'required|max:1000',
+            'property_type_id'  => 'required|numeric',
+            'bedrooms'          => 'required|numeric',
+            'bathrooms'         => 'required|numeric',
+            'floor_area'        => 'required|numeric',
+            'agent'             => 'required|array',
+            'country'           => 'required|max:50',
+            'address'           => 'required|max:255',
+            'image'             => 'mimes:jpg,jpeg,png,gif|max:1048'
+        ]);
+
+        $property                   = $this->property->findOrFail($id);
+        $property->description      = $request->description;
+        $property->summary          = $request->summary;
+        $property->property_type_id = $request->property_type_id;
+        $property->bedrooms         = $request->bedrooms;
+        $property->bathrooms        = $request->bathrooms;
+        $property->floor_area       = $request->floor_area;
+        $property->country          = $request->country;
+        $property->address          = $request->address;
+        if ($request->image) {
+            $this->deleteImage($property->image);
+            $property->image = $this->saveImage($request);
+        }
+        $property->save();
+        
+        $property->propertyUser()->delete();
+
+        foreach ($request->agent as $agent_id) {
+            $property_user[] = ['user_id' => $agent_id];
+        }
+        $property->propertyUser()->createMany($property_user);
+
+        return redirect()->route('property.show', $id);
+    }
+
+    private function deleteImage($image_name)
+    {
+        $image_path = self::LOCAL_STORAGE_FOLDER . $image_name;
+
+        if (Storage::disk('local')->exists($image_path)){
+            Storage::disk('local')->delete($image_path);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $property = $this->property->findOrFail($id);
+        $this->deleteImage($property->image);
+        $property->delete();
+
+        return redirect()->route('index');
     }
 }

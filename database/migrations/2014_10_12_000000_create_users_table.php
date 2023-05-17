@@ -18,10 +18,6 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('avatar')->nullable();
-            $table->unsignedBigInteger('role_id')
-                    ->default(2)
-                    ->comment('1:admin 2:agent');
             $table->timestamps();
         });
     }
