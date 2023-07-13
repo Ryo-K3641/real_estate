@@ -7,6 +7,7 @@ use App\Models\Property;
 use App\Models\User;
 use App\Models\PropertyType;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class PropertyController extends Controller
 {
@@ -90,6 +91,11 @@ class PropertyController extends Controller
     public function edit($id)
     {
         $property           = $this->property->findOrFail($id);
+
+        if (!in_array(Auth::user()->id, $this->getSelectedAgents($property))) {
+            return redirect()->route('index');
+        }
+
         $property_types     = $this->property_type->all();
         $all_agents         = $this->user->all();
         $selected_agents    = $this->getSelectedAgents($property);
